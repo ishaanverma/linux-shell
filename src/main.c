@@ -1,9 +1,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define BUFFER_SIZE 1024
+#define MAX_HIS_SIZE 100
 
 int status = 1;
-int BUFFER_SIZE = 1024;
+char *history[MAX_HIS_SIZE];
+int last = 0;
+
+
+void add_history(char *line)    {
+
+    history[last % MAX_HIS_SIZE] = line;
+    last++;
+    
+}
+
+void get_history()  {
+    int i;
+
+    for(i=0; i < last; i++) {
+        printf("%s\n", *(history + i));
+    }
+}
 
 char *read_line()   {
     static char *line_read = (char *) NULL;
@@ -31,19 +50,22 @@ char *read_line()   {
     }
 
     if (line_read && *line_read)
-        //add_history(line_read);
+        add_history(line_read);
 
     return (line_read);
 
 }
+
 int main(int argc, char *argv[])    {
-    char *line;
+    char *line, *token;
 
     do  {
-        // get_string() fucntion will call the GNU readline function
+
         line = read_line();
-        printf("%s", line);
-    }while(status);
+        //token = tokenize(line);
+        //printf("%s\n", line);
+        get_history();
+    } while(status);
 
 
     return 0;
