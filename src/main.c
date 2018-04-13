@@ -6,22 +6,37 @@
 
 int status = 1;
 char *history[MAX_HIS_SIZE];
-int last = 0;
+int front = -1, last = 0;
 
 
 void add_history(char *line)    {
+    if (front == -1)
+        front += 1;
+
+    if (last >= MAX_HIS_SIZE)   {
+        free(history[front]);
+        front = (front + 1) % MAX_HIS_SIZE;
+    }
 
     history[last % MAX_HIS_SIZE] = line;
     last++;
-    
 }
 
 void get_history()  {
     int i;
-
-    for(i=0; i < last; i++) {
+    printf("----------HISTORY-----------\n");
+    for(i=front; i < MAX_HIS_SIZE; i++) {
+        if (*(history + i)) {
+            printf("%s\n", *(history + i));
+        }
+        else    {
+            break;
+        }
+    }
+    for(i=0; i < front; i++)    {
         printf("%s\n", *(history + i));
     }
+    printf("----------------------------\n");
 }
 
 char *read_line()   {
@@ -30,7 +45,6 @@ char *read_line()   {
     int position = 0;
 
     if (line_read)  {
-        free(line_read);
         line_read = (char *) NULL;
     }
 
