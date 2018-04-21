@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include "built_in_commands.h"
 
 #define BUFFER_SIZE 1024
 #define MAX_HIS_SIZE 100
@@ -29,7 +30,6 @@ void add_history(char *line)    {
 void get_history()  {
     int i;
     printf("----------HISTORY-----------\n");
-
     for(i=front; i < MAX_HIS_SIZE; i++) {
         if (*(history + i)) {
             printf("%s\n", *(history + i));
@@ -107,22 +107,39 @@ char **tokenize(char *line, char delimiter)  {
 }
 
 int execprogram(char **argu)    {
-    int pid;
-    pid = fork();
+    int i;
+    pid_t pid;
 
+    for(i=0; i < sizeof(commands_list); i++)  {
+        if (strcmp(argu[0], commands_list[i]) == 0)    {
+            switch(i)   {
+                case 0: exec_cd(argu);
+                        break;
+                case 1: exec_pwd();
+                        break;
+                case 2: exec_exit();
+                        break;
+                default: printf("No command function found\n");
+            }
+
+            return 1;
+        }
+    }
+
+    pid = fork();
     //child
     if (pid == 0)   {
-        int r;
-        r = execvp(argu[0], argu);
+        int estat;
+        estat = execvp(argu[0], argu);
 
-        if (r == -1)    {
+        if (estat == -1)    {
             printf("Unkown Command\n");
         }
         exit(0);
     }
     //parent
     else    {
-        wait(&pid);
+        wait(NULL);
         return 1;
     }
 }
@@ -131,7 +148,8 @@ int main(int argc, char *argv[])    {
     char *line, *token, **argu;
 
     do  {
-
+        exec_pwd();
+        printf("%s>> ", cwd);
         line = read_line();
         argu = tokenize(line, ' ');
         execprogram(argu);
