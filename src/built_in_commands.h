@@ -5,12 +5,13 @@ char cwd[MAX_DIR_SIZE];
 char *commands_list[] = {
     "cd",
     "pwd",
-    "exit"
+    "history",
+    "exit",
+    "PS1"
 };
 
 int exec_pwd()   {
     if (getcwd(cwd, sizeof(cwd)) != NULL)   {
-        //printf("%s\n", cwd);
         return 1;
     }
     else
@@ -25,4 +26,13 @@ int exec_cd(char **args)  {
 
 int exec_exit() {
     exit(0);
+}
+
+char *exec_prompt(char **args)    {
+    static char prompt[3] = ">>";
+
+    if (args[2] != NULL)
+        prompt[0] = *args[2];
+
+    return (prompt);
 }

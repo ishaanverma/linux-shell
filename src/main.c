@@ -1,13 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <sys/wait.h>
 #include "built_in_commands.h"
+#include "token.h"
 
 #define BUFFER_SIZE 1024
 #define MAX_HIS_SIZE 100
-#define MAX_TOK_SIZE 25
 
 int status = 1;
 char *history[MAX_HIS_SIZE];
@@ -27,7 +26,7 @@ void add_history(char *line)    {
     last++;
 }
 
-void get_history()  {
+void exec_history()  {
     int i;
     printf("----------HISTORY-----------\n");
     for(i=front; i < MAX_HIS_SIZE; i++) {
@@ -77,49 +76,28 @@ char *read_line()   {
 
 }
 
-char **tokenize(char *line, char delimiter)  {
-
-    static char *args[MAX_TOK_SIZE];
-    int length = strlen(line);
-    int i = 0, tokens = 0;
-    char *new_line = (char *) NULL;
-
-
-    new_line = realloc(line, (sizeof(char) * length));
-
-    if (!(*new_line))
-        return NULL;
-
-    args[tokens] = new_line;
-    tokens++;
-    for (i=0; i < length; i++)  {
-        if (new_line[i] == delimiter)   {
-            new_line[i] = '\0';
-
-            if (new_line[i+1] != delimiter)    {
-                args[tokens] = new_line + (i * sizeof(char)) + 1;
-                tokens++;
-            }
-        }
-    }
-
-    return args;
-}
-
 int execprogram(char **argu)    {
     int i;
+    int len = sizeof(commands_list) / sizeof(commands_list[0]);
     pid_t pid;
 
-    for(i=0; i < sizeof(commands_list); i++)  {
+    if  (argu[0] == NULL)
+        return 0;
+
+    for(i=0; i < len; i++)  {
         if (strcmp(argu[0], commands_list[i]) == 0)    {
             switch(i)   {
                 case 0: exec_cd(argu);
                         break;
                 case 1: exec_pwd();
                         break;
-                case 2: exec_exit();
+                case 2: exec_history();
                         break;
-                default: printf("No command function found\n");
+                case 3: exec_exit();
+                        break;
+                case 4: exec_prompt(argu);
+                        break;
+                default: printf("Not command function found\n");
             }
 
             return 1;
@@ -144,17 +122,36 @@ int execprogram(char **argu)    {
     }
 }
 
+int welcome_screen(char *name)   {
+    FILE *fptr = NULL;
+    char read_string[BUFFER_SIZE];
+
+    if ((fptr = fopen(name, "r")) == NULL)  {
+        fprintf(stderr, "error opening %s\n", name);
+        return 1;
+    }
+
+    while(fgets(read_string, sizeof(read_string), fptr) != NULL)
+        printf("%s", read_string);
+
+    printf("\n \n");
+
+}
+
 int main(int argc, char *argv[])    {
     char *line, *token, **argu;
+    char *filename = "image.txt";
+    welcome_screen(filename);
 
     do  {
         exec_pwd();
-        printf("%s>> ", cwd);
+        printf("%s %s ", cwd, exec_prompt(argu));
         line = read_line();
         argu = tokenize(line, ' ');
-        execprogram(argu);
-        //printf("%s\n", line);
-        //get_history();
+
+        if (execprogram(argu))
+            continue;
+
     } while(status);
 
 
