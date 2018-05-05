@@ -12,6 +12,9 @@ int status = 1;
 char *history[MAX_HIS_SIZE];
 int front = -1, last = 0;
 
+int execprogram(char **argu);
+int exec_most_recent(int n);
+int exec_n_cmd(char **argu);
 
 void add_history(char *line)    {
     if (front == -1)
@@ -81,7 +84,7 @@ int execprogram(char **argu)    {
     int len = sizeof(commands_list) / sizeof(commands_list[0]);
     pid_t pid;
 
-    if  (argu[0] == NULL)
+    if  (argu == NULL)
         return 0;
 
     for(i=0; i < len; i++)  {
@@ -95,7 +98,9 @@ int execprogram(char **argu)    {
                         break;
                 case 3: exec_exit();
                         break;
-                case 4: exec_prompt(argu);
+                case 4: exec_most_recent(2);
+                        break;
+                case 5: exec_n_cmd(argu);
                         break;
                 default: printf("Not command function found\n");
             }
@@ -122,6 +127,29 @@ int execprogram(char **argu)    {
     }
 }
 
+int exec_most_recent(int n)   {
+    if (!n || n <= 1)  {
+        n = 2;
+    }
+
+    char **arg;
+    int index;
+    index = last-(1*n)-1;
+
+    if (index < 0)
+        index = 0;
+
+    arg = tokenize(history[index], ' ');
+    execprogram(arg);
+}
+
+int exec_n_cmd(char **argu)    {
+    if (argu[1] == NULL)
+        return 1;
+
+    exec_most_recent(atoi(argu[1]));
+}
+
 int welcome_screen(char *name)   {
     FILE *fptr = NULL;
     char read_string[BUFFER_SIZE];
@@ -145,7 +173,7 @@ int main(int argc, char *argv[])    {
 
     do  {
         exec_pwd();
-        printf("%s %s ", cwd, exec_prompt(argu));
+        printf("%s >> ", cwd);
         line = read_line();
         argu = tokenize(line, ' ');
 

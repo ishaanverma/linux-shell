@@ -7,8 +7,8 @@ char **tokenize(char *line, char delimiter)  {
     int i = 0, tokens = 0;
     char *new_line = (char *) NULL;
 
-
-    new_line = realloc(line, (sizeof(char) * length));
+    new_line = (char *) malloc(sizeof(char) * strlen(line));
+    memcpy(new_line, line, sizeof(line));
 
     if (!(*new_line))
         return NULL;

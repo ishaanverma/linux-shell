@@ -11,4 +11,3 @@ $$    $$/       $$    $$/ $$ |  $$ |$$       |$$       |$$       |
 
 
 CREATED BY ISHAAN & KUSHAGRA
-Type "help" for a list of commands

@@ -7,7 +7,8 @@ char *commands_list[] = {
     "pwd",
     "history",
     "exit",
-    "PS1"
+    "!!",
+    "!"
 };
 
 int exec_pwd()   {
@@ -20,19 +21,10 @@ int exec_pwd()   {
 
 int exec_cd(char **args)  {
     chdir(args[1]);
-    exec_pwd(NULL);
+    exec_pwd();
     return 1;
 }
 
 int exec_exit() {
     exit(0);
-}
-
-char *exec_prompt(char **args)    {
-    static char prompt[3] = ">>";
-
-    if (args[2] != NULL)
-        prompt[0] = *args[2];
-
-    return (prompt);
 }
